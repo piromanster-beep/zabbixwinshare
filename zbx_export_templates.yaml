@@ -1,0 +1,37 @@
+zabbix_export:
+  version: '7.0'
+  template_groups:
+    - uuid: 7df96b18c230490a9a0a9e2307226338
+      name: Templates
+  templates:
+    - uuid: 4cc5e0dd1b1449b18b1555ee593b6bc7
+      template: 'Template Backup Disks'
+      name: 'Template Backup Disks'
+      description: 'Проверка бэкапных дисков'
+      groups:
+        - name: Templates
+      discovery_rules:
+        - uuid: 091063e710cb4c9ca6731eebadfaebed
+          name: 'Discover backup disks'
+          key: disk.discover
+          delay: 1h
+          item_prototypes:
+            - uuid: df2ff3260c184ac281a902c5f2b2dd0b
+              name: 'Disk {#DISK} access'
+              key: 'disk.access[{#DISK}]'
+              delay: 5m
+              trigger_prototypes:
+                - uuid: 82724328fea04b259a0d67fc332d938f
+                  expression: 'last(/Template Backup Disks/disk.access[{#DISK}])=0'
+                  name: 'Disk {#DISK} (share: {ITEM.LAST2}) is not accessible'
+                  priority: HIGH
+            - uuid: 4fff3daffc1a44eda3042cd35c376c1e
+              name: 'Disk {#DISK} UNC path'
+              key: 'disk.unc.path[{#DISK}]'
+              delay: 6h
+              value_type: TEXT
+              trends: '0'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.data
